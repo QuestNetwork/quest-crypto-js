@@ -40,7 +40,7 @@ export class Ec {
     return keys;
   }
 
-    async sign(object, keyHex){
+    async sign(obj, keyHex){
       // console.log('signing!');
       // console.log(obj['channel']);
       let key = await this.convert.importKey('ECDSA','jwk','hex',keyHex);

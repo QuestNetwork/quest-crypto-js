@@ -1,5 +1,6 @@
 const CryptoJS = require('crypto-js')
 import { Convert } from "./convert.js";
+const { v4: uuidv4 } = require('uuid');
 
 
 export class Aes {
@@ -22,6 +23,18 @@ export class Aes {
      result = uuidv4() + result;
 
      return result;
+  }
+  encrypt(utf8OrObject, whistle = undefined){
+    let utf8;
+    if(typeof utf8OrObject == 'object'){
+      utf8 = JSON.stringify(utf8OrObject);
+    }
+    else{
+      utf8 = utf8OrObject;
+    }
+    //string to array buffer
+    let wordArray = CryptoJS.lib.WordArray.create(this.convert.stringToArrayBuffer(utf8,'utf8'));
+    return this.encryptWordArray(wordArray,whistle);
   }
   encryptB64(b64, whistle = undefined){
     //string to array buffer
@@ -61,7 +74,14 @@ export class Aes {
   }
   decryptHex(enc,secret, format = 'utf8'){
     let msgB64 = Buffer.from(enc,'hex').toString('base64');
-    return this.decryptB64(msgB64, secret, format);
+    let decr = this.decryptB64(msgB64, secret, format);
+    // console.log(decr);
+    try{
+        if(typeof decr == 'string'){
+            return JSON.parse(decr)
+          }
+    }
+    catch(e){ return decr; }
   }
   decryptB64(encryptedQuestFileB64, secret, format = 'utf8'){
     let decryptedQuestFileWordArray;
