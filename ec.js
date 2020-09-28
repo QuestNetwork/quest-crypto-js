@@ -1,5 +1,5 @@
 let WebCrypto;
-if(typeof(window.crypto) != 'undefined'){
+if(typeof window != 'undefined' && typeof window.crypto != 'undefined'){
   WebCrypto = window.crypto;
 }
 else{
