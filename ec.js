@@ -17,6 +17,10 @@ export class Ec {
     this.convert = new Convert();
   }
 
+async  digest(algo,data){
+   return await WebCrypto.subtle.digest(algo, data)
+  }
+
   async generateKeyPair(){
     let keyPair =  await WebCrypto.subtle.generateKey({
       name: 'ECDSA',
