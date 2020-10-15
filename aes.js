@@ -47,14 +47,33 @@ export class Aes {
     let wordArray = CryptoJS.lib.WordArray.create(this.convert.stringToArrayBuffer(utf8,'utf8'));
     return this.encryptWordArray(wordArray,whistle);
   }
+
+  tweakShortWhistle(whistle){
+      let multi = Math.floor(128/whistle.length)
+      let i = 0;
+      // console.log(whistle.length);
+      // console.log(multi);
+
+      while(multi != Infinity && i<multi){
+          whistle += whistle;
+          i++;
+      }
+
+
+    return whistle;
+  }
+
   encryptWordArray(wordArray, whistle = undefined){
-    let secret;
-    if(typeof(whistle) == 'undefined'){
+    let secret = "";
+    console.log(whistle);
+    if(typeof(whistle) == 'undefined' || whistle.length == 0){
         secret = this.generatePassphrase(256);
     }
-    else{
-      secret = whistle;
+
+    if(typeof whistle == 'string' && whistle.length < 66){
+      secret = this.tweakShortWhistle(whistle);
     }
+
     // console.log('encryption start...');
 
     // KEYS FROM SECRET
@@ -86,6 +105,11 @@ export class Aes {
   decryptB64(encryptedQuestFileB64, secret, format = 'utf8'){
     let decryptedQuestFileWordArray;
     try{
+
+      if(secret.length < 66){
+        secret = this.tweakShortWhistle(secret);
+      }
+
       //aes decrypt this file
       let key = CryptoJS.enc.Utf8.parse(secret.slice(0,64));         // Key: Use a WordArray-object instead of a UTF8-string / NodeJS-buffer
       let iv = CryptoJS.enc.Utf8.parse(secret.substr(secret.length-16));
