@@ -10,8 +10,16 @@ export class Aes {
   }
 
 
+
+     reverseString(str) {
+      if (str === "")
+        return "";
+      else
+        return this.reverseString(str.substr(1)) + str.charAt(0);
+    }
+
+
   generatePassphrase(length) {
-     length = length - 36;
      var result           = '';
      var characters       = 'abcdefghijklmnopqrstuvwxyz0123456789-!#?';
      var charactersLength = characters.length;
@@ -24,6 +32,58 @@ export class Aes {
 
      return result;
   }
+
+
+  hashSecret(message,newSecret, rounds = 10){
+    if(rounds < 5000){
+      rounds = 5000;
+    }
+    //rounds = 5000;
+        let key;
+          let iv;
+
+          if(newSecret == undefined || typeof newSecret == 'undefined' || newSecret.length == 0 ){
+            newSecret = this.generatePassphrase(128+16);
+          }
+
+
+
+        // KEYS FROM newSecret
+        if(newSecret.length > 128+15){
+          key = CryptoJS.enc.Utf8.parse(newSecret.slice(0,64));         // Key: Use a WordArray-object instead of a UTF8-string / NodeJS-buffer
+          iv = CryptoJS.enc.Utf8.parse(newSecret.slice(newSecret.length-64-16,newSecret.length-16));
+        }
+        else if(newSecret.length > 91+128+16){
+          key = CryptoJS.enc.Utf8.parse(newSecret.slice(91,91+64));         // Key: Use a WordArray-object instead of a UTF8-string / NodeJS-buffer
+          iv = CryptoJS.enc.Utf8.parse(newSecret.slice(newSecret.length-64-16,newSecret.length-16));
+        }
+        else{
+          if(message == undefined || typeof message == 'undefined' || message.length == 0 ){
+            message = this.generatePassphrase(128+16);
+          }
+
+          let i = 0;
+          let hashedNewSecret;
+          let aesSecret = newSecret;
+          while(i<rounds){
+            if(i > 0){
+              aesSecret = hashedNewSecret;
+            }
+
+            hashedNewSecret = CryptoJS.HmacSHA512(String(message),this.reverseString(String(aesSecret))).toString();
+            // console.log(hashedNewSecret);
+            i++;
+          }
+
+
+          key = CryptoJS.enc.Utf8.parse(hashedNewSecret.slice(0,64));         // Key: Use a WordArray-object instead of a UTF8-string / NodeJS-buffer
+          iv = CryptoJS.enc.Utf8.parse(hashedNewSecret.substr(newSecret.length-64));
+
+        }
+
+        return { newSecret, key, iv};
+  }
+
   encrypt(utf8OrObject, whistle = undefined){
     let utf8;
     if(typeof utf8OrObject == 'object'){
@@ -38,7 +98,7 @@ export class Aes {
   }
   encryptB64(b64, whistle = undefined){
     //string to array buffer
-    console.log('about to create word array');
+    // console.log('about to create word array');
     let wordArray = CryptoJS.lib.WordArray.create(this.convert.stringToArrayBuffer(b64,'base64'));
     return this.encryptWordArray(wordArray,whistle);
   }
@@ -47,20 +107,13 @@ export class Aes {
     let wordArray = CryptoJS.lib.WordArray.create(this.convert.stringToArrayBuffer(utf8,'utf8'));
     return this.encryptWordArray(wordArray,whistle);
   }
-  encryptWordArray(wordArray, whistle = undefined){
-    let secret;
-    if(typeof(whistle) == 'undefined'){
-        secret = this.generatePassphrase(256);
-    }
-    else{
-      secret = whistle;
-    }
+  encryptWordArray(wordArray, secret = undefined){
     // console.log('encryption start...');
+    let {newSecret, key, iv} = this.hashSecret(secret,secret);
+     secret = newSecret;
+    // console.log('aeskey:'+key);
 
-    // KEYS FROM SECRET
-    var key = CryptoJS.enc.Utf8.parse(secret.slice(0,64));         // Key: Use a WordArray-object instead of a UTF8-string / NodeJS-buffer
-    var iv = CryptoJS.enc.Utf8.parse(secret.substr(secret.length-16));
-    // ENCRYPT
+   // ENCRYPT
     let aesEncryptedB64 = CryptoJS.AES.encrypt(wordArray, key, {
       iv: iv,
       mode: CryptoJS.mode.CBC,
@@ -84,11 +137,17 @@ export class Aes {
     catch(e){ return decr; }
   }
   decryptB64(encryptedQuestFileB64, secret, format = 'utf8'){
+
+
     let decryptedQuestFileWordArray;
     try{
       //aes decrypt this file
-      let key = CryptoJS.enc.Utf8.parse(secret.slice(0,64));         // Key: Use a WordArray-object instead of a UTF8-string / NodeJS-buffer
-      let iv = CryptoJS.enc.Utf8.parse(secret.substr(secret.length-16));
+
+      let {key, iv} = this.hashSecret(secret,secret);
+
+
+          // console.log('iv:'+iv);
+
       decryptedQuestFileWordArray = CryptoJS.AES.decrypt(encryptedQuestFileB64, key, {
          iv: iv,
          mode: CryptoJS.mode.CBC,
@@ -114,6 +173,10 @@ export class Aes {
     }
     // return "123";
   }
+
+
+
+
 
 
 

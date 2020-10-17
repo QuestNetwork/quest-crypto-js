@@ -1,6 +1,6 @@
 {
   "name": "@questnetwork/quest-crypto-js",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "license": "AGPL-3.0",
   "author": "StationedInTheField",
   "main": "nativeCrypto.js",
@@ -15,7 +15,7 @@
     "build": "rm -rf dist && babel . --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files"
     },
   "dependencies": {
-    "uuid": "^8.2.0",
+    "uuid": "8.3.0",
     "@peculiar/webcrypto": "1.1.1",
     "crypto-js": "^4.0.0"
   },

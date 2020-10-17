@@ -1,5 +1,5 @@
 let WebCrypto;
-if(typeof(window.crypto) != 'undefined'){
+if(typeof window != 'undefined' && typeof window.crypto != 'undefined'){
   WebCrypto = window.crypto;
 }
 else{
@@ -15,6 +15,10 @@ export class Ec {
 
   constructor(){
     this.convert = new Convert();
+  }
+
+async  digest(algo,data){
+   return await WebCrypto.subtle.digest(algo, data)
   }
 
   async generateKeyPair(){

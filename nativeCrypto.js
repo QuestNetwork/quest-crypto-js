@@ -15,11 +15,6 @@ export class NativeCrypto {
 
   }
 
-
-   inArray(array, value) {
-    return array.indexOf(value) > -1;
-  }
-
   async generateKeyPair(format = "OAEP"){
 
     if(format == "OAEP"){
