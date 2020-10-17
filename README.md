@@ -43,22 +43,94 @@ let { secret, aesEncryptedB64 } = <os>.crypto.aes.encrypt('test');
 #### decryptB64(aesEncryptedB64, secret, format = 'utf8')
 
 Decrypts a B64 string with the whistle
-Returns Base64.
+Returns String or Object.
 ```javascript
 let { secret, aesEncryptedB64 } = <os>.crypto.aes.decryptB64(aesEncryptedB64, secret, format = 'utf8')
 ```
 
+#### decryptHex(enc,secret, format = 'utf8'
 
-
-### qr
-
-#### utilities.qr.generate()
-
-Returns a DataUrl containing generated QR Code.
+Decrypts a Hex string with the whistle
+Returns String or Object.
 ```javascript
-let qrDataUrl = <os>.utilities.qr.generate(text);
+let { secret, aesEncryptedB64 } = <os>.crypto.aes.decryptHex(aesEncryptedHex, secret, format = 'utf8')
 ```
 
+### convert
+
+#### stringToArrayBuffer(string,format)
+
+Returns an ArrayBuffer of the input string.
+```javascript
+let aB = <os>.crypto.convert.stringToArrayBuffer(string,'utf8');
+```
+
+#### bufferToArrayBuffer(buf)
+
+Returns an ArrayBuffer of the input butter
+```javascript
+let hashed = <os>.crypto.convert.bufferToArrayBuffer(buf);
+```
+
+#### async importKey(alg,format,keyenc,key)
+
+Imports a key for WebCrypto.
+```javascript
+await <os>.crypto.convert.importKey(alg,format,keyenc,key);
+```
+
+### ec
+
+#### async digest(algo,data)
+
+Digests data using the supplied algorithm.
+```javascript
+let digest = await <os>.crypto.ec.digest('SHA-256',data);
+```
+
+#### async generateKeyPair()
+
+Generates an EC keypair with maximum security according to the Quest Network protocol.
+```javascript
+let keys = await <os>.crypto.ec.generateKeyPair();
+```
+
+#### async sign(obj, keyHex)
+Signs an object with an EC private Hex key according to the Quest Network protocol.
+```javascript
+let signedObject = await <os>.crypto.ec.sign(obj,keyHex);
+```
+
+#### verify(obj, keyHex)
+Verifies a signed object with an EC public Hex key according to the Quest Network protocol.
+```javascript
+if(await <os>.crypto.ec.verify(obj,keyHex)){
+  console.log('Signature Checks Out!');
+}
+```
+
+### rsa
+
+#### async generateKeyPair()
+
+Generates an RSA keypair with maximum security according to the Quest Network protocol.
+```javascript
+let keys = await <os>.crypto.rsa.generateKeyPair();
+```
+
+#### async fullEncrypt(plain,pubKey)
+
+Encrypts a string with an RSA private key
+```javascript
+let encrypted = await <os>.crypto.rsa.fullEncrypt(plain,pubKey);
+```
+
+
+#### async fullDecrypt(enc,pk)
+Decrypts a string with an RSA public key
+```javascript
+let decrypted = await <os>.crypto.rsa.fullDecrypt(encrypted,pk);
+```
 
 
 ## Support Us
