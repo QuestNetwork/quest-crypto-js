@@ -84,7 +84,7 @@ export class Aes {
         return { newSecret, key, iv};
   }
 
-  encrypt(utf8OrObject, whistle = undefined){
+  encrypt(utf8OrObject, whistle = undefined, salt = undefined){
     let utf8;
     if(typeof utf8OrObject == 'object'){
       utf8 = JSON.stringify(utf8OrObject);
@@ -94,7 +94,7 @@ export class Aes {
     }
     //string to array buffer
     let wordArray = CryptoJS.lib.WordArray.create(this.convert.stringToArrayBuffer(utf8,'utf8'));
-    return this.encryptWordArray(wordArray,whistle);
+    return this.encryptWordArray(wordArray,whistle, salt);
   }
   encryptB64(b64, whistle = undefined){
     //string to array buffer
@@ -107,9 +107,30 @@ export class Aes {
     let wordArray = CryptoJS.lib.WordArray.create(this.convert.stringToArrayBuffer(utf8,'utf8'));
     return this.encryptWordArray(wordArray,whistle);
   }
-  encryptWordArray(wordArray, secret = undefined){
+  encryptWordArray(wordArray, secret = undefined, salt = undefined){
     // console.log('encryption start...');
-    let {newSecret, key, iv} = this.hashSecret(secret,secret);
+
+    let newSecret0 = "";
+    let key0 = "";
+    let iv0 = "";
+
+    if(salt != undefined){
+      let { newSecret, key, iv } = this.hashSecret(secret,salt);
+      newSecret0 = newSecret;
+      key0 = key;
+      iv0 = iv;
+    }
+    else{
+      let { newSecret, key, iv } = this.hashSecret(secret,secret);
+      newSecret0 = newSecret;
+      key0 = key;
+      iv0 = iv;
+    }
+
+    let newSecret = newSecret0;
+    let key = key0;
+    let iv = iv0;
+
      secret = newSecret;
     // console.log('aeskey:'+key);
 
@@ -125,9 +146,9 @@ export class Aes {
     // console.log('encryption complete!');
     return { secret, aesEncryptedB64 }
   }
-  decryptHex(enc,secret, format = 'utf8'){
+  decryptHex(enc,secret, format = 'utf8', salt = undefined ){
     let msgB64 = Buffer.from(enc,'hex').toString('base64');
-    let decr = this.decryptB64(msgB64, secret, format);
+    let decr = this.decryptB64(msgB64, secret, format, salt);
     // console.log(decr);
     try{
         if(typeof decr == 'string'){
@@ -136,14 +157,29 @@ export class Aes {
     }
     catch(e){ return decr; }
   }
-  decryptB64(encryptedQuestFileB64, secret, format = 'utf8'){
+  decryptB64(encryptedQuestFileB64, secret, format = 'utf8', salt = undefined){
 
 
     let decryptedQuestFileWordArray;
     try{
       //aes decrypt this file
+      let key = "";
+      let iv = "";
+      let key0 = "";
+      let iv0 = "";
+      if(salt != undefined){
+       let  {key, iv} = this.hashSecret(secret,salt);
+       key0 = key;
+       iv0 = iv;
+      }
+      else{
+        let {key, iv} = this.hashSecret(secret,secret);
+        key0 = key;
+        iv0 = iv;
+      }
 
-      let {key, iv} = this.hashSecret(secret,secret);
+      key = key0;
+      iv = iv0;
 
 
           // console.log('iv:'+iv);
