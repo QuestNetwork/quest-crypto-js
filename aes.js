@@ -168,12 +168,12 @@ export class Aes {
       let key0 = "";
       let iv0 = "";
       if(salt != undefined){
-       let  {key, iv} = this.hashSecret(secret,salt);
+       let  {newSecret, key, iv} = this.hashSecret(secret,salt);
        key0 = key;
        iv0 = iv;
       }
       else{
-        let {key, iv} = this.hashSecret(secret,secret);
+        let {newSecret, key, iv} = this.hashSecret(secret,secret);
         key0 = key;
         iv0 = iv;
       }
